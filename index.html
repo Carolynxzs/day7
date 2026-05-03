@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高频词 Day 7 跟读音频</title>
+  <style>
+    :root {
+      --bg: #f1f8f4; --card: #ffffff; --pri: #4caf84;
+      --pri-lt: #e8f5ee; --txt: #2e3b32; --txt2: #5e6b61;
+      --border: #d4e3d8; --shadow: 0 2px 12px rgba(0,0,0,0.06);
+      --rad: 16px; --rad-sm: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg); color: var(--txt);
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 16px; padding-bottom: 100px;
+    }
+    .nav-bar {
+      width: 100%; max-width: 500px; display: flex; align-items: center;
+      justify-content: center; background: var(--card); border-radius: var(--rad);
+      padding: 12px 16px; margin-bottom: 20px; box-shadow: var(--shadow); gap: 20px;
+      position: sticky; top: 16px; z-index: 10;
+    }
+    .day-title { font-size: 1.3rem; font-weight: 600; min-width: 180px; text-align: center; }
+    .hint {
+      width: 100%; max-width: 500px; background: #fff9e0; color: #7b6e2f;
+      font-size: 0.95rem; text-align: center; padding: 10px 16px;
+      border-radius: 10px; margin-bottom: 16px; border: 1px solid #f0e5b0;
+    }
+    .card {
+      width: 100%; max-width: 500px; background: var(--card);
+      border-radius: var(--rad); padding: 20px 18px;
+      box-shadow: var(--shadow); margin-bottom: 20px;
+    }
+    .ctrl-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .ctrl-btn {
+      background: var(--pri-lt); border: none; border-radius: 50%;
+      width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 18px; color: var(--pri); transition: 0.25s;
+    }
+    .ctrl-btn:hover { background: var(--pri); color: #fff; }
+    .play-btn { width: 50px; height: 50px; font-size: 22px; background: var(--pri); color: #fff; }
+    .play-btn:hover { background: #3d9b6d; }
+    .time { font-size: 0.85rem; color: var(--txt2); margin-left: auto; white-space: nowrap; }
+    .status-box {
+      min-height: 20px; padding: 6px 10px; border-radius: 6px;
+      font-size: 0.8rem; margin-bottom: 8px; text-align: center;
+      background: #f0f9f4; color: #27ae60; display: none;
+      word-break: break-all; line-height: 1.4;
+    }
+    .status-box.error { background: #fdf2f2; color: #e74c3c; }
+    .prog-cont { width: 100%; height: 6px; background: #e0ebe4; border-radius: 3px; cursor: pointer; }
+    .prog-fill { height: 100%; border-radius: 3px; background: var(--pri); width: 0%; transition: width 0.1s; }
+    .section-title { font-size: 1rem; font-weight: 600; color: var(--pri); margin: 14px 0 8px; padding-bottom: 6px; border-bottom: 2px solid var(--pri-lt); }
+    .sentences-cont {
+      max-height: 280px; overflow-y: auto; padding-right: 4px;
+      border: 1px solid var(--border); border-radius: var(--rad-sm); background: #fafdfb;
+    }
+    .sentence-item { padding: 12px 14px; border-bottom: 1px solid #edf3ef; cursor: pointer; }
+    .sentence-item:last-child { border-bottom: none; }
+    .sentence-item:hover { background: var(--pri-lt); }
+    .sentence-original { font-size: 1rem; margin-bottom: 2px; }
+    .sentence-translation { font-size: 0.9rem; color: var(--txt2); }
+    .mini-player {
+      position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card);
+      border-top: 1px solid var(--border); box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+      padding: 10px 16px; display: none; align-items: center; justify-content: space-between;
+      z-index: 20;
+    }
+    .mini-player.visible { display: flex; }
+    .mini-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .mini-play-btn {
+      background: var(--pri); border: none; border-radius: 50%;
+      width: 34px; height: 34px; color: #fff; font-size: 16px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .mini-prog { flex: 1; height: 4px; background: #e0ebe4; border-radius: 2px; cursor: pointer; margin: 0 8px; }
+    .mini-prog-fill { height: 100%; border-radius: 2px; background: var(--pri); width: 0%; }
+    .mini-time { font-size: 0.8rem; color: var(--txt2); white-space: nowrap; }
+    audio { display: none; }
+  
+        .footer-mark {
+            width: 100%; max-width: 500px; text-align: center;
+            padding: 20px 18px; margin-top: 20px;
+            background: #ffffff; border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            color: #5e6b61; font-size: 0.9rem; line-height: 1.6;
+        }
+        .footer-mark-line2 {
+            color: #c0392b;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+</style>
+</head>
+<body>
+  <div class="nav-bar">
+    <span class="day-title" id="dayTitle"></span>
+  </div>
+  <div class="hint">🔊 在间隙跟读或重复英文哦！</div>
+  <div class="card" id="mainPlayerCard">
+    <div style="margin-bottom:16px">
+      <div class="ctrl-row">
+        <button class="ctrl-btn" id="rewindBtn" title="后退15秒">&#9167;</button>
+        <button class="ctrl-btn play-btn" id="playPauseBtn">&#9654;</button>
+        <button class="ctrl-btn" id="forwardBtn" title="前进15秒">&#9166;</button>
+        <span class="time" id="timeDisplay">0:00 / 0:00</span>
+      </div>
+      <div class="status-box" id="statusText"></div>
+      <div class="prog-cont" id="progressBar"><div class="prog-fill" id="progressFill"></div></div>
+    </div>
+    <audio id="audioElement" preload="metadata"></audio>
+    <div class="sentences-cont" id="sentencesContainer"></div>
+  </div>
+  <div class="mini-player" id="miniPlayer">
+    <div class="mini-left">
+      <button class="mini-play-btn" id="miniPlayPauseBtn">&#9654;</button>
+      <div class="mini-prog" id="miniProgressBar"><div class="mini-prog-fill" id="miniProgressFill"></div></div>
+      <span class="mini-time" id="miniTimeDisplay">0:00</span>
+    </div>
+  </div>
+  <script>
+  var dayData = {
+    "title": "高频词 Day 7",
+    "audioSrc": "Day7_audio.mp3",
+    "words": [
+        { "original": "continue", "translation": "继续；持续" },
+        { "original": "challenge", "translation": "挑战" },
+        { "original": "grade", "translation": "等级；评分" },
+        { "original": "loudly", "translation": "大声地；响亮地" },
+        { "original": "simple", "translation": "简单的；朴素的" },
+        { "original": "treat", "translation": "对待；治疗" },
+        { "original": "opinion", "translation": "意见；看法" },
+        { "original": "ground", "translation": "地面；放在地上" },
+        { "original": "brave", "translation": "勇敢的" },
+        { "original": "imagine", "translation": "想象；设想" },
+        { "original": "reach", "translation": "到达；达成" }
+    ],
+    "sentences1": [
+        { "original": "I want to hear your opinion on this plan.", "translation": "我想听听你对这个计划的意见" },
+        { "original": "We will reach the park at three o'clock.", "translation": "我们将在三点钟到达公园" },
+        { "original": "Please continue to study hard every day.", "translation": "请继续每天努力学习" },
+        { "original": "Close your eyes and imagine a happy place.", "translation": "闭上眼睛，\n想象一个快乐的地方" },
+        { "original": "My parents are proud of my good grades.", "translation": "我父母为我取得好成绩感到自豪" },
+        { "original": "We should treat animals with kindness.", "translation": "我们应该善待动物" },
+        { "original": "The fireman was very brave in the big fire.", "translation": "那位消防员在大火中非常勇敢" },
+        { "original": "Learning a new language is a fun challenge.", "translation": "学习一门新语言是一个有趣的挑战" },
+        { "original": "The ball is on the ground near the tree.", "translation": "球在树旁的地上" },
+        { "original": "She got a high grade in the math test.", "translation": "她在数学测验中得了高分" },
+        { "original": "The question is very simple for me.", "translation": "这个问题对我来说很简单" },
+        { "original": "Please read the story loudly to the class.", "translation": "请大声给全班同学读这个故事" }
+    ],
+    "sentences2": [
+        { "original": "In my opinion, every small step can help us reach a big goal.", "translation": "" },
+        { "original": "We must continue to move forward.", "translation": "" },
+        { "original": "Imagine a future where you make your family proud.", "translation": "" },
+        { "original": "We should treat every challenge as a chance to grow.", "translation": "" },
+        { "original": "It is easy to be brave when you stand on solid ground.", "translation": "" },
+        { "original": "I worked hard and got a better grade last term.", "translation": "" },
+        { "original": "This simple truth gives me power.", "translation": "" },
+        { "original": "I will not just sit quietly — I will speak loudly and share my dream.", "translation": "" },
+        { "original": "The journey may have challenges, but I will continue with a brave heart.", "translation": "" },
+        { "original": "I imagine the day when I reach my goal and feel truly proud.", "translation": "" }
+    ]
+  };
+
+(function() {
+  var audio = document.getElementById("audioElement");
+  var playBtn = document.getElementById("playPauseBtn");
+  var rewindBtn = document.getElementById("rewindBtn");
+  var forwardBtn = document.getElementById("forwardBtn");
+  var progressBar = document.getElementById("progressBar");
+  var progressFill = document.getElementById("progressFill");
+  var timeDisplay = document.getElementById("timeDisplay");
+  var container = document.getElementById("sentencesContainer");
+  var dayTitleEl = document.getElementById("dayTitle");
+  var miniPlayer = document.getElementById("miniPlayer");
+  var miniPlayBtn = document.getElementById("miniPlayPauseBtn");
+  var miniBar = document.getElementById("miniProgressBar");
+  var miniFill = document.getElementById("miniProgressFill");
+  var miniTime = document.getElementById("miniTimeDisplay");
+  var mainCard = document.getElementById("mainPlayerCard");
+  var statusEl = document.getElementById("statusText");
+
+  var words = dayData.words || [];
+  var sentences1 = dayData.sentences1 || [];
+  var sentences2 = dayData.sentences2 || [];
+  var isPlaying = false;
+  var audioReady = false;
+  var audioError = false;
+
+  dayTitleEl.textContent = dayData.title;
+
+  // 关键修复：对中文文件名进行 URL 编码
+  function getAudioUrl(raw) {
+    if (!raw) return "";
+    // 如果是完整路径或已编码，直接返回
+    var parts = raw.split("/");
+    var last = parts[parts.length - 1];
+    // 对文件名部分进行编码，保留扩展名
+    var encoded = "";
+    for (var i = 0; i < parts.length; i++) {
+      if (i > 0) encoded += "/";
+      encoded += encodeURIComponent(parts[i]);
+    }
+    return encoded;
+  }
+
+  var rawSrc = dayData.audioSrc;
+  audio.src = getAudioUrl(rawSrc);
+  console.log("音频源设置为：", audio.src);
+
+  function fmt(s) {
+    if (isNaN(s)) return "0:00";
+    var m = Math.floor(s / 60), ss = Math.floor(s % 60);
+    return m + ":" + (ss < 10 ? "0" : "") + ss;
+  }
+
+  function updateBtn() {
+    var t = isPlaying ? "⏸" : "▶";
+    playBtn.textContent = t;
+    miniPlayBtn.textContent = t;
+  }
+
+  function showStatus(msg, isError) {
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.style.color = isError ? "#e74c3c" : "#27ae60";
+    statusEl.style.display = msg ? "block" : "none";
+  }
+
+  function togglePlay() {
+    if (!rawSrc) {
+      alert("未配置音频文件名！");
+      return;
+    }
+    if (audioError) {
+      alert("音频加载失败！\n\n请确保以下文件存在于 HTML 同一文件夹中：\n" + rawSrc + "\n\n当前音频路径：" + audio.src + "\n\n请检查文件是否存在，以及文件名是否完全一致（包括中文）。");
+      return;
+    }
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      if (!audioReady) {
+        showStatus("音频加载中，请稍候...");
+        audio.load();
+      }
+      var p = audio.play();
+      if (p && typeof p.then === "function") {
+        p.catch(function(e) {
+          var errDetail = "";
+          if (audio.error) {
+            switch(audio.error.code) {
+              case 1: errDetail = "用户中止了播放"; break;
+              case 2: errDetail = "网络错误，无法加载音频文件"; break;
+              case 3: errDetail = "音频解码失败，文件可能损坏"; break;
+              case 4: errDetail = "音频格式不支持或文件不存在"; break;
+              default: errDetail = "未知错误(code:" + audio.error.code + ")";
+            }
+          }
+          var fullMsg = "播放失败：" + (e.message || "") + " | " + errDetail + "\n音频路径：" + audio.src;
+          showStatus(fullMsg, true);
+          console.error("播放错误：", e, "audio.error:", audio.error);
+        });
+      }
+    }
+  }
+
+  function skip(sec) {
+    if (!audio.duration) { showStatus("请先播放音频"); return; }
+    audio.currentTime = Math.min(Math.max(audio.currentTime + sec, 0), audio.duration);
+  }
+
+  function render() {
+    var html = "";
+    if (words.length > 0) {
+      html += '<div class="section-title">任务一：单词</div>';
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        html += '<div class="sentence-item"><div class="sentence-original">' + esc(w.original) + '</div><div class="sentence-translation">' + esc(w.translation) + '</div></div>';
+      }
+    }
+    if (sentences1.length > 0) {
+      html += '<div class="section-title">任务二：语境练习1</div>';
+      for (var i = 0; i < sentences1.length; i++) {
+        var s = sentences1[i];
+        html += '<div class="sentence-item"><div class="sentence-original">' + esc(s.original) + '</div><div class="sentence-translation">' + esc(s.translation) + '</div></div>';
+      }
+    }
+    if (sentences2.length > 0) {
+      html += '<div class="section-title">任务三：语境练习2</div>';
+      for (var i = 0; i < sentences2.length; i++) {
+        html += '<div class="sentence-item"><div class="sentence-original">' + esc(sentences2[i].original) + '</div></div>';
+      }
+    }
+    if (!html) html = '<p style="padding:20px;text-align:center;color:#888;">暂无内容</p>';
+    container.innerHTML = html;
+  }
+
+  function esc(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function updateProgress() {
+    var cur = audio.currentTime || 0, dur = audio.duration || 0;
+    var pct = dur ? (cur / dur * 100) : 0;
+    progressFill.style.width = pct + "%";
+    miniFill.style.width = pct + "%";
+    timeDisplay.textContent = fmt(cur) + " / " + fmt(dur);
+    miniTime.textContent = fmt(cur);
+  }
+
+  function setProg(e, bar) {
+    if (!audio.duration) { showStatus("请先播放音频"); return; }
+    var rect = bar.getBoundingClientRect();
+    var pct = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+    audio.currentTime = pct * audio.duration;
+  }
+
+  function checkMini() {
+    if (!mainCard) return;
+    var r = mainCard.getBoundingClientRect();
+    miniPlayer.classList.toggle("visible", r.bottom <= 0 || r.top >= window.innerHeight);
+  }
+
+  // 音频事件监听 - 详细诊断
+  audio.addEventListener("canplay", function() {
+    audioReady = true; audioError = false;
+    showStatus("音频已就绪，可以播放");
+    console.log("音频可以播放，duration:", audio.duration);
+  });
+  audio.addEventListener("canplaythrough", function() {
+    audioReady = true; audioError = false;
+    console.log("音频可以流畅播放");
+  });
+  audio.addEventListener("loadstart", function() {
+    showStatus("开始加载音频文件...");
+    console.log("开始加载：", audio.src);
+  });
+  audio.addEventListener("loadeddata", function() {
+    console.log("音频数据已加载，duration:", audio.duration);
+  });
+  audio.addEventListener("loadedmetadata", function() {
+    audioReady = true; audioError = false;
+    showStatus("音频元数据已加载，时长：" + fmt(audio.duration));
+    updateProgress();
+    console.log("元数据加载完成，时长:", audio.duration);
+  });
+  audio.addEventListener("error", function() {
+    audioReady = false; audioError = true;
+    var errMsg = "音频加载失败！";
+    if (audio.error) {
+      switch(audio.error.code) {
+        case 1: errMsg += "（用户中止）"; break;
+        case 2: errMsg += "（网络错误，可能是文件路径问题）"; break;
+        case 3: errMsg += "（解码失败，文件可能损坏）"; break;
+        case 4: errMsg += "（文件不存在或格式不支持）"; break;
+        default: errMsg += "（未知错误）";
+      }
+    }
+    errMsg += "\n文件路径：" + audio.src;
+    showStatus(errMsg, true);
+    console.error("音频错误 code=" + (audio.error ? audio.error.code : "null"), audio.error);
+  });
+  audio.addEventListener("stalled", function() {
+    console.warn("音频加载停滞");
+    showStatus("音频加载停滞，请检查文件是否存在", true);
+  });
+  audio.addEventListener("play", function() { isPlaying = true; updateBtn(); showStatus(""); });
+  audio.addEventListener("pause", function() { isPlaying = false; updateBtn(); });
+  audio.addEventListener("ended", function() { isPlaying = false; updateBtn(); });
+  audio.addEventListener("timeupdate", updateProgress);
+
+  playBtn.addEventListener("click", togglePlay);
+  miniPlayBtn.addEventListener("click", togglePlay);
+  rewindBtn.addEventListener("click", function() { skip(-15); });
+  forwardBtn.addEventListener("click", function() { skip(15); });
+  progressBar.addEventListener("click", function(e) { setProg(e, progressBar); });
+  miniBar.addEventListener("click", function(e) { setProg(e, miniBar); });
+  window.addEventListener("scroll", checkMini);
+  window.addEventListener("resize", checkMini);
+
+  render();
+  setTimeout(checkMini, 100);
+})();
+  </script>
+
+    <div class="footer-mark">
+        <div>Carolyn教英语📖原创资料</div>
+        <div class="footer-mark-line2">内部资料 严禁外传</div>
+    </div>
+
+</body>
+</html>
